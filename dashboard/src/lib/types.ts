@@ -78,6 +78,8 @@ export type ChecklistStep = {
   phase_order: number
   phase_when: string | null
   step_order: number
+  /** 'a' | 'b' | 'c' when one plan step is split per founder. */
+  sub_label: string | null
   title: string
   detail: string | null
   meta: string | null
@@ -106,4 +108,14 @@ export type LedgerEntry = {
   approved_at: string | null
   created_at: string
   updated_at: string
+}
+
+export type DocumentFile = {
+  id: string
+  name: string
+  created_at: string
+  updated_at: string
+  size_bytes: number | null
+  mime_type: string | null
+  uploaded_by: string | null
 }

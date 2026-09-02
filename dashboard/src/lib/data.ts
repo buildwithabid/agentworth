@@ -2,6 +2,7 @@ import { supabase } from './supabase'
 import type {
   ChecklistStep,
   Deal,
+  DocumentFile,
   LedgerEntry,
   Project,
   Settings,
@@ -55,8 +56,18 @@ export async function fetchChecklist(): Promise<ChecklistStep[]> {
     .select('*')
     .order('phase_order')
     .order('step_order')
+    .order('sub_label', { nullsFirst: true })
   if (error) throw error
   return (data ?? []) as ChecklistStep[]
+}
+
+export async function fetchDocuments(): Promise<DocumentFile[]> {
+  const { data, error } = await supabase
+    .from('documents')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as DocumentFile[]
 }
 
 export async function fetchLedger(): Promise<LedgerEntry[]> {

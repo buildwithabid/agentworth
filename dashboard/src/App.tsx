@@ -10,6 +10,7 @@ import Capacity from './screens/Capacity'
 import Tasks from './screens/Tasks'
 import Ledger from './screens/Ledger'
 import Checklist from './screens/Checklist'
+import Documents from './screens/Documents'
 import Weekly from './screens/Weekly'
 import Team from './screens/Team'
 
@@ -28,6 +29,8 @@ function Screen({ route }: { route: Route }) {
       return <Ledger />
     case 'checklist':
       return <Checklist />
+    case 'documents':
+      return <Documents />
     case 'weekly':
       return <Weekly />
     case 'team':

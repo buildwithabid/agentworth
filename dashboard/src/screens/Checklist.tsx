@@ -5,6 +5,7 @@ import { nameOf, useSession } from '../lib/session'
 import type { ChecklistStep } from '../lib/types'
 import { shortDate, today } from '../lib/format'
 import {
+  Avatar,
   Badge,
   Bar,
   Button,
@@ -12,6 +13,7 @@ import {
   ErrorBanner,
   Field,
   Input,
+  Label,
   LoadingScreen,
   Modal,
   PageHeader,
@@ -26,6 +28,7 @@ export default function Checklist() {
   const [steps, setSteps] = useState<ChecklistStep[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [editing, setEditing] = useState<ChecklistStep | null>(null)
+  const [mineOnly, setMineOnly] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -40,9 +43,26 @@ export default function Checklist() {
     void load()
   }, [load])
 
+  const shown = useMemo(
+    () => (steps ?? []).filter((s) => !mineOnly || s.owner_id === me?.id),
+    [steps, mineOnly, me],
+  )
+
+  const perPerson = useMemo(() => {
+    const map = new Map<string, { done: number; total: number }>()
+    for (const s of steps ?? []) {
+      if (!s.owner_id) continue
+      const b = map.get(s.owner_id) ?? { done: 0, total: 0 }
+      b.total++
+      if (s.done) b.done++
+      map.set(s.owner_id, b)
+    }
+    return [...map.entries()]
+  }, [steps])
+
   const phases = useMemo(() => {
     const map = new Map<number, { phase: string; when: string | null; steps: ChecklistStep[] }>()
-    for (const s of steps ?? []) {
+    for (const s of shown) {
       const bucket = map.get(s.phase_order) ?? {
         phase: s.phase,
         when: s.phase_when,
@@ -52,7 +72,7 @@ export default function Checklist() {
       map.set(s.phase_order, bucket)
     }
     return [...map.entries()].sort((a, b) => a[0] - b[0])
-  }, [steps])
+  }, [shown])
 
   const doneCount = (steps ?? []).filter((s) => s.done).length
   const total = (steps ?? []).length
@@ -91,7 +111,7 @@ export default function Checklist() {
 
       <PageHeader
         title="Setup checklist"
-        subtitle="Nineteen steps, in order. Clients before company, company before hiring."
+        subtitle="The plan, in order, with one named owner on every line. Clients before company, company before hiring."
       />
 
       <Card className="mb-5">
@@ -103,8 +123,40 @@ export default function Checklist() {
           <div className="min-w-0 flex-1">
             <Bar value={doneCount} max={total || 1} height="h-3" />
           </div>
+          <button
+            onClick={() => setMineOnly((v) => !v)}
+            className="shrink-0 rounded-md border border-rule bg-white px-2.5 py-1 text-xs font-medium text-body transition hover:border-body/40 hover:text-ink"
+          >
+            {mineOnly ? 'Showing mine' : 'Showing everyone'}
+          </button>
         </div>
+
+        {perPerson.length > 0 && (
+          <div className="mt-4 border-t border-rule pt-3">
+            <Label>Who owns what</Label>
+            <div className="mt-2 space-y-2">
+              {perPerson.map(([id, b]) => (
+                <div key={id} className="flex items-center gap-3">
+                  <Avatar name={nameOf(team, id)} you={id === me?.id} />
+                  <span className="w-36 shrink-0 truncate text-sm">{nameOf(team, id)}</span>
+                  <div className="min-w-0 flex-1">
+                    <Bar value={b.done} max={b.total} height="h-2.5" />
+                  </div>
+                  <span className="tnum w-12 shrink-0 text-right text-xs text-muted">
+                    {b.done}/{b.total}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </Card>
+
+      {phases.length === 0 && (
+        <Card className="text-center text-sm text-body">
+          Nothing on this list is yours. Switch to “Showing everyone”.
+        </Card>
+      )}
 
       <div className="space-y-8">
         {phases.map(([order, { phase, when, steps: list }]) => {
@@ -127,7 +179,7 @@ export default function Checklist() {
                   return (
                     <li
                       key={s.id}
-                      className="grid grid-cols-[2.2rem_1fr] gap-x-3 border-b border-rule py-3.5"
+                      className="grid grid-cols-[2.6rem_1fr] gap-x-3 border-b border-rule py-3.5"
                     >
                       <span
                         className={`tnum pt-0.5 font-serif text-lg ${
@@ -135,6 +187,7 @@ export default function Checklist() {
                         }`}
                       >
                         {String(s.step_order).padStart(2, '0')}
+                        {s.sub_label && <span className="text-sm">{s.sub_label}</span>}
                       </span>
                       <div className="min-w-0">
                         <label
@@ -165,17 +218,20 @@ export default function Checklist() {
                           )}
                           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
                             {s.owner_id ? (
-                              <span>
-                                <span className="font-medium text-body">Owner</span>{' '}
-                                {nameOf(team, s.owner_id)}
+                              <span className="inline-flex items-center gap-1.5">
+                                <Avatar
+                                  name={nameOf(team, s.owner_id)}
+                                  you={s.owner_id === me?.id}
+                                />
+                                <span className="font-medium text-body">
+                                  {nameOf(team, s.owner_id)}
+                                </span>
+                                {s.owner_id === me?.id && <Badge tone="accent">yours</Badge>}
                               </span>
                             ) : (
-                              s.owner_note && (
-                                <span>
-                                  <span className="font-medium text-body">Who</span> {s.owner_note}
-                                </span>
-                              )
+                              <Badge tone="warn">no owner</Badge>
                             )}
+                            {s.owner_note && <span>{s.owner_note}</span>}
                             {s.meta && <span>{s.meta}</span>}
                             {s.done && s.completed_date && (
                               <Badge tone="accent">done {shortDate(s.completed_date)}</Badge>

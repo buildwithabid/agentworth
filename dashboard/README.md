@@ -68,7 +68,8 @@ as each role and by exercising the policies directly.
 | Capacity | Weekly hours cap vs committed, earliest free week |
 | Tasks | To-dos with one named owner and a due date |
 | Ledger | Money in and out, PRC tracking, clause 6 approvals |
-| Checklist | The 19-step setup plan, in the database and editable |
+| Checklist | The setup plan, one named owner per line |
+| Documents | Shared private file store for all three |
 | Weekly | The Monday meeting on one screen |
 | Team | Roles (admin only) |
 
@@ -103,6 +104,37 @@ by signed-in users. The second is deliberate — RLS policies are evaluated as
 the caller, so `authenticated` must hold EXECUTE on it; the function takes no
 arguments and returns the caller's own role. Every trigger function has had
 EXECUTE revoked so none of them are reachable over the REST API.
+
+## The checklist
+
+The plan's 19 steps became 23 rows, because three of them are per-person by
+the plan's own wording and were split so each founder has their own line:
+
+- **03a/b/c** — each founder gets their own NTN with their own CNIC
+- **05a/b** — one close each, one per sales founder
+- **16a/b** — same lead channel, one row per founder's list
+
+Every row has exactly one named owner. As seeded that is Abid on 17 and the
+sales founders on 3 each — which is what the plan actually distributes:
+registration, tax, banking, contracts, capacity and the filing calendar
+(clause 10 names him) are all his. If you want that shared differently, the
+owner is a dropdown on each step.
+
+**Step 01 is already ticked.** The founders' agreement is signed and dated
+01/09/2026 and clause 4 carries the four-year vesting with a one-year cliff,
+which is exactly its done-when. Untick it if you disagree.
+
+## Documents
+
+A private Supabase Storage bucket, 25 MB per file, shared with all three of
+you. Anyone on the team can upload and everyone sees everything — the same
+principle clause 6 applies to the money. Deleting is narrower: your own
+uploads, or Abid, so the signed agreement cannot be removed by accident.
+
+Files are stored under `<uuid>/<original name>`, so two people uploading
+`scan.pdf` do not collide and the name you chose survives. Nothing is
+reachable by URL: opening a file mints a signed link that expires after two
+minutes.
 
 ## Things worth knowing
 

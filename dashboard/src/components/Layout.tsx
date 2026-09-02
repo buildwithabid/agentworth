@@ -9,6 +9,7 @@ export const ROUTES = [
   'tasks',
   'ledger',
   'checklist',
+  'documents',
   'weekly',
   'team',
 ] as const
@@ -20,6 +21,7 @@ const LABELS: Record<Route, string> = {
   tasks: 'Tasks',
   ledger: 'Ledger',
   checklist: 'Checklist',
+  documents: 'Documents',
   weekly: 'Weekly',
   team: 'Team',
 }
