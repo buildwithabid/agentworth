@@ -3,14 +3,29 @@
 @theme {
   --color-paper:  #faf8f4;
   --color-panel:  #f2efe8;
+  --color-sunk:   #ece8df;
   --color-ink:    #151714;
-  --color-body:   #4f534c;
+  --color-body:   #5a5f57;
+  --color-muted:  #8a9086;
   --color-rule:   #e0dbd0;
   --color-accent: #1f4d3f;
-  --color-alarm:  #b4342a;
+  --color-alarm:  #a8322a;
+  --color-warn:   #9c5716;
 
   --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
   --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+
+  --animate-rise: rise .18s cubic-bezier(.2,.8,.3,1);
+  --animate-fade: fade .15s ease-out;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 html {
@@ -22,7 +37,23 @@ body {
   margin: 0;
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-feature-settings: "cv05", "ss01";
+  -webkit-font-smoothing: antialiased;
 }
 
-/* keep numbers aligned in tables and totals */
+/* one focus treatment everywhere */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .tnum { font-variant-numeric: tabular-nums; }
+
+/* horizontal scrollers keep their edges quiet */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Button, ErrorBanner, Field, Input } from './ui'
+import { Button, Field, Input } from './ui'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
@@ -20,9 +20,15 @@ export default function SignIn() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-paper px-4">
       <form onSubmit={submit} className="w-full max-w-sm">
-        <h1 className="mb-1 font-serif text-2xl">Agentworth</h1>
-        <p className="mb-6 text-sm text-body">Internal dashboard.</p>
-        {error && <ErrorBanner message={error} />}
+        <h1 className="font-serif text-3xl tracking-tight">Agentworth</h1>
+        <p className="mt-1 mb-7 text-sm text-body">Internal dashboard — founders only.</p>
+
+        {error && (
+          <div className="mb-4 rounded-lg border border-alarm/40 bg-alarm/10 px-3.5 py-2.5 text-sm text-alarm">
+            {error}
+          </div>
+        )}
+
         <div className="space-y-4">
           <Field label="Email">
             <Input
@@ -31,6 +37,7 @@ export default function SignIn() {
               autoComplete="username"
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoFocus
             />
           </Field>
           <Field label="Password">
@@ -46,6 +53,10 @@ export default function SignIn() {
             {busy ? 'Signing in…' : 'Sign in'}
           </Button>
         </div>
+
+        <p className="mt-6 text-xs text-muted">
+          Forgotten your password? Abid can reset it from the Supabase dashboard.
+        </p>
       </form>
     </div>
   )

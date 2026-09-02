@@ -9,88 +9,115 @@ deployed as a static build.
 ## Live at https://agentworth.co/dashboard/
 
 Published from `main` as part of the existing GitHub Pages site. The marketing
-page at the root is untouched. The URL is public but the data is not: every
-table is restricted to a named list of founder emails (see below), so anyone
-who reaches the page gets a login they cannot pass.
+page at the root is untouched.
 
 **To redeploy after a change:**
 
 ```
 cd dashboard && npm run build
-# then copy dist/ to dashboard/ on main and push:
 git worktree add --detach /tmp/deploy origin/main
 cp -r dist/. /tmp/deploy/dashboard/
 cd /tmp/deploy && git add -A && git commit -m "Update dashboard build" && git push origin HEAD:main
 git worktree remove /tmp/deploy
 ```
 
-## Who can get in
+## Who can do what
 
-`public.is_founder()` (migration 0003) holds the allowlist. Every table's RLS
-policy calls it, so access is by email, not merely by being logged in.
+Two roles, taken from the signed founders' agreement rather than invented:
 
-**Currently allowed: `aitechpro1987@gmail.com` only.** Add the other two
-founders by editing that one function and re-running it, then create their
-accounts under **Authentication → Users** in the Supabase dashboard.
+| | admin (Abid) | sales (Ikhtisham, Rehbar) | pending |
+|---|---|---|---|
+| Pipeline | every deal | reads all, writes only their own | nothing |
+| Deal delete / reassign | yes | **no** | no |
+| Capacity cap & projects | sets them | read only | no |
+| Ledger | records entries | reads, and signs second approvals | no |
+| Checklist | edits the list | ticks their own and shared steps | no |
+| Tasks | anything | raises any, moves their own or ones they raised | no |
+| Team & roles | yes | no | no |
 
-Verified: an authenticated user outside the list sees zero rows on every table
-and is refused on insert; a listed founder reads and writes normally.
+Why those lines, specifically:
 
-Still worth doing, though no longer load-bearing: turn off
-**Authentication → Sign In / Providers → Email → "Allow new users to sign up"**,
-and enable leaked-password protection (the last security-advisor warning).
+- **Clause 2 and 5** — the technical founder "sets the price and the delivery
+  capacity limit" and has "the final word on what we commit to build, on
+  timelines and on the price floor". So the cap and the project list are
+  admin-only; sales see them and work to them.
+- **Clause 5** — founders B and C "decide how they run their own pipelines".
+  So sales own their own deals outright, and cannot touch the other one's.
+- **Clause 7** — "clients and leads belong to the business, not to the founder
+  who brought them in". So a sales founder cannot delete a deal or hand it to
+  the other owner; only an admin can. This matters most on the day someone
+  leaves (clause 8 handover).
+- **Clause 6** — spending above PKR 5,000 needs a second founder's approval.
+  Outgoing ledger entries above the threshold show as needing approval, and
+  **nobody can approve an entry they recorded themselves**, admin included.
+  Thresholds are on the settings row and editable; the USD figure is a rough
+  equivalent, not a converted rate — change it to whatever you actually mean.
 
-## Supabase project
+Everyone reads the whole pipeline. That is deliberate: the duplicate-company
+warning cannot work otherwise, and clause 7 says the leads are the business's.
 
-Already created and migrated: **agentworth-dashboard**
-(`fanvuxwojwccowofshjm`, region ap-south-1, free tier).
-
-All three migrations in `supabase/migrations/` are applied. Tables: `deals`,
-`capacity_settings` (seeded with a 20 h cap), `projects`, `ledger_entries`,
-`checklist_steps`. RLS is on everywhere with one policy per table, gated on
-`public.is_founder()`. Verified: anonymous callers get zero rows on read and
-401 on insert.
+Permissions are enforced by Postgres row-level security, not by hiding buttons.
+Hiding a button is a courtesy; the policy is the control. Verified by signing in
+as each role and by exercising the policies directly.
 
 ## Screens
 
-| # | Screen | Status |
-|---|--------|--------|
-| 1 | Pipeline — deals by stage, duplicate-company warning, value per owner | built, tested against the live database |
-| 2 | Capacity — weekly hours cap vs committed, earliest free week | built, tested against the live database |
-| 3 | Ledger | schema only |
-| 4 | Setup checklist | schema only |
-| 5 | Weekly numbers | schema only |
+| Screen | What it is for |
+|---|---|
+| Pipeline | Deals by stage, duplicate-company warning, value per owner |
+| Capacity | Weekly hours cap vs committed, earliest free week |
+| Tasks | To-dos with one named owner and a due date |
+| Ledger | Money in and out, PRC tracking, clause 6 approvals |
+| Checklist | The 19-step setup plan, in the database and editable |
+| Weekly | The Monday meeting on one screen |
+| Team | Roles (admin only) |
 
-## Running it
+## Supabase project
 
-```
-cp .env.example .env      # already points at the live project
-npm install
-npm run dev               # local
-npm run build             # static build into dist/
-```
+**agentworth-dashboard** (`fanvuxwojwccowofshjm`, ap-south-1, free tier). All
+migrations in `supabase/migrations/` are applied.
 
-`vite.config.ts` uses a relative `base`, so `dist/` works from the domain root
-or from a subpath. Routing is hash-based for the same reason — no server
-rewrite rules needed.
+## Accounts
+
+Three accounts exist: Abid (admin), Ikhtisham and Rehbar (sales).
+
+**Adding someone:** create the account in the Supabase dashboard under
+Authentication → Users with **Auto Confirm User** ticked. A trigger gives them a
+`pending` profile, which grants nothing anywhere. Abid then assigns a role on
+the Team screen.
+
+**Removing someone:** set them back to `pending` on the Team screen. They are
+locked out immediately and nothing they entered is deleted.
+
+**The founding admin** is bootstrapped by email in `public.handle_new_user()`.
+If that address ever changes, edit the function.
+
+Worth doing in the Supabase dashboard: turn off Authentication → Sign In /
+Providers → Email → "Allow new users to sign up", and enable leaked-password
+protection. Neither is load-bearing now — a stray sign-up lands as `pending`
+with no access — but both are free.
 
 ## Things worth knowing
 
-- **Duplicate companies.** Detected on a normalised name — the generated
-  `company_key` column is `lower(btrim(company))`, so `"  northgate
-  ACCOUNTANTS "` collides with `"Northgate Accountants"`. Deals in `Lost` are
-  ignored; a dead deal is not a collision. The warning shows on the board, on
-  the affected cards, and live in the form before you save.
-- **Pipeline value.** "Open" means `Lead`, `Contacted`, `Scoped`, `Proposal`.
-  `Won` is reported separately; `Lost` is not counted.
-- **Capacity.** A project consumes its `est_hours_per_week` in every week
-  between `start_date` and `end_date` inclusive. A project with no end date
-  holds those hours forever, so free capacity never appears — that is
-  deliberate, put an end date on anything meant to finish.
-- **Earliest free week** looks 26 weeks ahead and reports the first week under
-  cap. If nothing is free in that horizon it says so rather than guessing.
-- **Stage history.** `deals.stage_changed_at` is maintained by a trigger. It is
-  not used by any screen yet; it exists so "deals moved this week" on screen 5
-  has data when that screen gets built.
-- The `checklist_steps` table is empty on purpose. Steps get inserted as rows
-  once the 19-step list is agreed — they are not in code.
+- **Duplicate companies** are matched on a normalised name (the generated
+  `company_key` column), so `"  northgate ACCOUNTANTS "` collides with
+  `"Northgate Accountants"`. Lost deals are ignored — a dead deal is not a
+  collision.
+- **Pipeline value.** "Open" means Lead, Contacted, Scoped, Proposal. Won is
+  reported separately; Lost is not counted.
+- **Capacity.** A project consumes its hours in every week between its start
+  and end dates. No end date means the hours are held forever and free capacity
+  never appears — deliberate, so put an end date on anything meant to finish.
+- **Earliest free week** looks 26 weeks ahead and says so plainly when nothing
+  is free, rather than guessing.
+- **Ledger balances are per currency.** USD and PKR are never added together.
+- **PRC flag** turns red on incoming payments older than 30 days without one.
+
+## Running it locally
+
+```
+cp .env.example .env
+npm install
+npm run dev
+npm run build
+```

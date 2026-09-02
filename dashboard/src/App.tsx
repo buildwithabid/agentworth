@@ -1,30 +1,45 @@
 import { useEffect, useState } from 'react'
-import type { Session } from '@supabase/supabase-js'
-import { supabase } from './lib/supabase'
-import Layout from './components/Layout'
+import { SessionProvider, useSession } from './lib/session'
+import Layout, { ROUTES } from './components/Layout'
 import type { Route } from './components/Layout'
 import SignIn from './components/SignIn'
+import Pending from './components/Pending'
+import { LoadingScreen, ToastProvider } from './components/ui'
 import Pipeline from './screens/Pipeline'
 import Capacity from './screens/Capacity'
-import { Loading } from './components/ui'
+import Tasks from './screens/Tasks'
+import Ledger from './screens/Ledger'
+import Checklist from './screens/Checklist'
+import Weekly from './screens/Weekly'
+import Team from './screens/Team'
 
 function currentRoute(): Route {
-  return window.location.hash.replace('#/', '') === 'capacity' ? 'capacity' : 'pipeline'
+  const hash = window.location.hash.replace(/^#\/?/, '') as Route
+  return ROUTES.includes(hash) ? hash : 'pipeline'
 }
 
-export default function App() {
-  const [session, setSession] = useState<Session | null>(null)
-  const [ready, setReady] = useState(false)
-  const [route, setRoute] = useState<Route>(currentRoute)
+function Screen({ route }: { route: Route }) {
+  switch (route) {
+    case 'capacity':
+      return <Capacity />
+    case 'tasks':
+      return <Tasks />
+    case 'ledger':
+      return <Ledger />
+    case 'checklist':
+      return <Checklist />
+    case 'weekly':
+      return <Weekly />
+    case 'team':
+      return <Team />
+    default:
+      return <Pipeline />
+  }
+}
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
-      setReady(true)
-    })
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
-    return () => sub.subscription.unsubscribe()
-  }, [])
+function Shell() {
+  const { session, ready, role, isAdmin } = useSession()
+  const [route, setRoute] = useState<Route>(currentRoute)
 
   useEffect(() => {
     const onHash = () => setRoute(currentRoute())
@@ -32,12 +47,31 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  if (!ready) return <Loading />
+  if (!ready)
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <LoadingScreen />
+      </div>
+    )
   if (!session) return <SignIn />
+  if (role === 'pending') return <Pending />
+
+  // a sales user who bookmarks /team gets sent back rather than shown nothing
+  const safe: Route = route === 'team' && !isAdmin ? 'pipeline' : route
 
   return (
-    <Layout route={route} email={session.user.email ?? ''}>
-      {route === 'capacity' ? <Capacity /> : <Pipeline />}
+    <Layout route={safe}>
+      <Screen route={safe} />
     </Layout>
+  )
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <SessionProvider>
+        <Shell />
+      </SessionProvider>
+    </ToastProvider>
   )
 }
