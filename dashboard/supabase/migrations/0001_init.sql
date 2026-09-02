@@ -13,6 +13,7 @@ create extension if not exists pgcrypto;
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   new.updated_at := now();
@@ -48,6 +49,7 @@ create index if not exists deals_owner_idx on public.deals (owner);
 create or replace function public.deals_touch()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   new.updated_at := now();
