@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper:  #faf8f4;
+  --color-panel:  #f2efe8;
+  --color-ink:    #151714;
+  --color-body:   #4f534c;
+  --color-rule:   #e0dbd0;
+  --color-accent: #1f4d3f;
+  --color-alarm:  #b4342a;
+
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--color-paper);
+}
+
+body {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* keep numbers aligned in tables and totals */
+.tnum { font-variant-numeric: tabular-nums; }
