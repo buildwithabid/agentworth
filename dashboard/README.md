@@ -6,34 +6,50 @@ from the marketing site at the repo root.
 Stack: React + Vite + TypeScript + Tailwind, Supabase for data and auth,
 deployed as a static build.
 
-## ⚠ Before you put real data in this
+## Live at https://agentworth.co/dashboard/
 
-**Public sign-up is still open on the Supabase project.** The anon key ships
-inside the JS bundle, so anyone who opens the deployed page can call
-`/auth/v1/signup`, create an account, and — because every policy grants full
-access to any logged-in user — read and write the pipeline and the ledger.
+Published from `main` as part of the existing GitHub Pages site. The marketing
+page at the root is untouched. The URL is public but the data is not: every
+table is restricted to a named list of founder emails (see below), so anyone
+who reaches the page gets a login they cannot pass.
 
-Fix it before the first real row goes in:
-**Supabase dashboard → Authentication → Sign In / Providers → Email →
-turn off "Allow new users to sign up"**, then create the three founder accounts
-by hand under **Authentication → Users**.
+**To redeploy after a change:**
 
-I verified sign-up is open by creating a test account, then deleted it. The
-project currently has zero users and zero rows.
+```
+cd dashboard && npm run build
+# then copy dist/ to dashboard/ on main and push:
+git worktree add --detach /tmp/deploy origin/main
+cp -r dist/. /tmp/deploy/dashboard/
+cd /tmp/deploy && git add -A && git commit -m "Update dashboard build" && git push origin HEAD:main
+git worktree remove /tmp/deploy
+```
 
-Worth doing at the same time: **Authentication → Policies → enable leaked
-password protection** (the only security-advisor warning left on the project).
+## Who can get in
+
+`public.is_founder()` (migration 0003) holds the allowlist. Every table's RLS
+policy calls it, so access is by email, not merely by being logged in.
+
+**Currently allowed: `aitechpro1987@gmail.com` only.** Add the other two
+founders by editing that one function and re-running it, then create their
+accounts under **Authentication → Users** in the Supabase dashboard.
+
+Verified: an authenticated user outside the list sees zero rows on every table
+and is refused on insert; a listed founder reads and writes normally.
+
+Still worth doing, though no longer load-bearing: turn off
+**Authentication → Sign In / Providers → Email → "Allow new users to sign up"**,
+and enable leaked-password protection (the last security-advisor warning).
 
 ## Supabase project
 
 Already created and migrated: **agentworth-dashboard**
 (`fanvuxwojwccowofshjm`, region ap-south-1, free tier).
 
-Both migrations in `supabase/migrations/` are applied. Tables: `deals`,
+All three migrations in `supabase/migrations/` are applied. Tables: `deals`,
 `capacity_settings` (seeded with a 20 h cap), `projects`, `ledger_entries`,
-`checklist_steps`. RLS is on everywhere with one policy per table: any
-authenticated user has full read/write. Verified: anonymous callers get zero
-rows on read and 401 on insert.
+`checklist_steps`. RLS is on everywhere with one policy per table, gated on
+`public.is_founder()`. Verified: anonymous callers get zero rows on read and
+401 on insert.
 
 ## Screens
 
