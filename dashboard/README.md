@@ -97,6 +97,13 @@ Providers → Email → "Allow new users to sign up", and enable leaked-password
 protection. Neither is load-bearing now — a stray sign-up lands as `pending`
 with no access — but both are free.
 
+Supabase's security advisor is clean except for two entries, both understood:
+leaked-password protection (the toggle above), and `my_role()` being callable
+by signed-in users. The second is deliberate — RLS policies are evaluated as
+the caller, so `authenticated` must hold EXECUTE on it; the function takes no
+arguments and returns the caller's own role. Every trigger function has had
+EXECUTE revoked so none of them are reachable over the REST API.
+
 ## Things worth knowing
 
 - **Duplicate companies** are matched on a normalised name (the generated
