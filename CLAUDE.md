@@ -43,6 +43,11 @@ invented.** If you change one, you are changing what the founders signed:
 A new sign-up gets a `pending` profile with access to nothing until an admin
 assigns a role. Never widen a policy to `to authenticated` without a role check.
 
+**Sign-up is invite-only.** `handle_new_user()` raises unless the address is in
+`public.allowed_signups`, so no account can be created by any route — including
+the Supabase console — without an admin inviting it first. If you need to create
+a user in a test or a script, insert the invite row first or the insert fails.
+
 ### Gotchas that already bit once
 
 - `guard_profile_role()` exempts callers with no JWT (SQL editor, service role).

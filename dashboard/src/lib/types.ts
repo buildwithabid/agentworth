@@ -119,3 +119,10 @@ export type DocumentFile = {
   mime_type: string | null
   uploaded_by: string | null
 }
+
+export type AllowedSignup = {
+  email: string
+  note: string | null
+  invited_by: string | null
+  created_at: string
+}

@@ -82,10 +82,16 @@ migrations in `supabase/migrations/` are applied.
 
 Three accounts exist: Abid (admin), Ikhtisham and Rehbar (sales).
 
-**Adding someone:** create the account in the Supabase dashboard under
-Authentication → Users with **Auto Confirm User** ticked. A trigger gives them a
-`pending` profile, which grants nothing anywhere. Abid then assigns a role on
-the Team screen.
+**Sign-up is invite-only, enforced by the database.** An address that is not on
+`public.allowed_signups` cannot create an account by any route — the trigger on
+`auth.users` refuses the insert, so it holds even from the Supabase console and
+even if the dashboard's sign-up toggle is switched on. Manage the list on the
+Team screen.
+
+**Adding someone:** invite the address on the Team screen, then create the
+account in the Supabase dashboard under Authentication → Users with **Auto
+Confirm User** ticked. They land as `pending`, which grants nothing anywhere,
+until Abid assigns a role.
 
 **Removing someone:** set them back to `pending` on the Team screen. They are
 locked out immediately and nothing they entered is deleted.
@@ -98,10 +104,9 @@ mean to remove the account.
 **The founding admin** is bootstrapped by email in `public.handle_new_user()`.
 If that address ever changes, edit the function.
 
-Worth doing in the Supabase dashboard: turn off Authentication → Sign In /
-Providers → Email → "Allow new users to sign up", and enable leaked-password
-protection. Neither is load-bearing now — a stray sign-up lands as `pending`
-with no access — but both are free.
+Public sign-up is closed at the database, so the dashboard toggle is belt and
+braces rather than the control. Still worth enabling leaked-password protection
+under Authentication → Policies.
 
 Supabase's security advisor is clean except for two entries, both understood:
 leaked-password protection (the toggle above), and `my_role()` being callable
@@ -140,6 +145,26 @@ Files are stored under `<uuid>/<original name>`, so two people uploading
 `scan.pdf` do not collide and the name you chose survives. Nothing is
 reachable by URL: opening a file mints a signed link that expires after two
 minutes.
+
+## Admin powers
+
+The Team screen gives the admin:
+
+- **The invite list** — who may hold an account at all. Removing an address
+  stops future registration; it does not touch an existing account.
+- **Roles** — `pending` is the immediate revoke. They keep an account and can
+  still sign in, but every table refuses them from that moment and they see the
+  "no access yet" screen. Nothing they entered is deleted.
+- **Pipeline handover** — move every deal someone owns to another founder in one
+  action. Clause 7 makes leads the business's, so a departure hands them on
+  rather than losing them.
+
+**Two things deliberately not in the browser:** setting someone's password and
+deleting an account outright. Both need the service-role key, which must never
+ship in a bundle. `supabase/functions/admin-users/` holds a deployable Edge
+Function that does them safely — it reads the caller's own JWT, checks their
+role in the database, and refuses anyone who is not an admin. It is **not
+deployed**; until it is, use Authentication → Users in the Supabase console.
 
 ## Interface
 

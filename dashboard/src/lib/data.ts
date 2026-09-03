@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import type {
+  AllowedSignup,
   ChecklistStep,
   Deal,
   DocumentFile,
@@ -78,4 +79,13 @@ export async function fetchLedger(): Promise<LedgerEntry[]> {
     .order('created_at')
   if (error) throw error
   return (data ?? []).map((e) => ({ ...e, amount: num(e.amount) })) as LedgerEntry[]
+}
+
+export async function fetchAllowedSignups(): Promise<AllowedSignup[]> {
+  const { data, error } = await supabase
+    .from('allowed_signups')
+    .select('*')
+    .order('created_at')
+  if (error) throw error
+  return (data ?? []) as AllowedSignup[]
 }
