@@ -125,7 +125,7 @@ export default function Checklist() {
           </div>
           <button
             onClick={() => setMineOnly((v) => !v)}
-            className="shrink-0 rounded-md border border-rule bg-white px-2.5 py-1 text-xs font-medium text-body transition hover:border-body/40 hover:text-ink"
+            className="shrink-0 rounded-md border border-rule bg-card px-2.5 py-1 text-xs font-medium text-body transition hover:border-body/40 hover:text-ink"
           >
             {mineOnly ? 'Showing mine' : 'Showing everyone'}
           </button>
@@ -201,7 +201,7 @@ export default function Checklist() {
                             checked={s.done}
                             disabled={!tickable}
                             onChange={(e) => void toggle(s, e.target.checked)}
-                            className="mt-1 h-[17px] w-[17px] shrink-0 accent-[#1f4d3f] disabled:opacity-30"
+                            className="mt-1 h-[17px] w-[17px] shrink-0 accent-[color:var(--color-accent)] disabled:opacity-30"
                           />
                           <span
                             className={`font-semibold ${
@@ -216,7 +216,7 @@ export default function Checklist() {
                           {s.detail && (
                             <p className="mt-1.5 max-w-prose text-sm text-body">{s.detail}</p>
                           )}
-                          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                          <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-muted [&>*+*]:before:mr-2 [&>*+*]:before:text-rule [&>*+*]:before:content-['·']">
                             {s.owner_id ? (
                               <span className="inline-flex items-center gap-1.5">
                                 <Avatar

@@ -53,6 +53,12 @@ assigns a role. Never widen a policy to `to authenticated` without a role check.
 - `my_role()` is `security definer` and keeps `EXECUTE` for `authenticated` on
   purpose: RLS expressions are evaluated as the caller. The advisor flags it;
   that is expected.
+- `ledger_guard()` needs the same no-JWT exemption. Deleting a profile cascades
+  `on delete set null` onto `ledger_entries`, and that UPDATE has no
+  `auth.uid()` — without the exemption the guard aborts the delete. **Any new
+  guard trigger on a table with a nullable FK to `profiles` needs it too.**
+- `deals.owner_id` is `on delete restrict` on purpose (clause 7). Deleting a
+  founder who owns deals fails by design; set the profile to `pending` instead.
 
 ## Conventions
 

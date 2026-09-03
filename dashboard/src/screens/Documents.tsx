@@ -13,6 +13,7 @@ import {
   PageHeader,
   useToast,
 } from '../components/ui'
+import { IconOpen, IconTrash, IconUpload } from '../components/icons'
 
 const MAX_BYTES = 25 * 1024 * 1024
 
@@ -114,7 +115,11 @@ export default function Documents() {
         title="Documents"
         subtitle="Shared with all three of you. The agreement, SECP and PSEB paperwork, PRCs, contracts, case studies."
         actions={
-          <Button onClick={() => input.current?.click()} disabled={busy}>
+          <Button
+            onClick={() => input.current?.click()}
+            disabled={busy}
+            icon={<IconUpload size={15} />}
+          >
             {busy ? 'Uploading…' : 'Upload'}
           </Button>
         }
@@ -143,6 +148,7 @@ export default function Documents() {
           dragging ? 'border-accent bg-accent/5' : 'border-rule'
         }`}
       >
+        <IconUpload size={22} className="mx-auto mb-2.5 text-muted" />
         <p className="text-sm text-body">
           Drop files here, or{' '}
           <button
@@ -167,7 +173,7 @@ export default function Documents() {
             return (
               <li
                 key={f.id}
-                className="flex items-center gap-3 rounded-xl border border-rule bg-white p-3.5 transition hover:border-body/30"
+                className="flex items-center gap-3 rounded-xl border border-rule bg-card p-3.5 shadow-card transition duration-150 hover:-translate-y-px hover:shadow-lift"
               >
                 <button onClick={() => void open(f)} className="min-w-0 flex-1 text-left">
                   <p className="truncate font-medium">{displayName(f.name)}</p>
@@ -186,7 +192,12 @@ export default function Documents() {
                     )}
                   </p>
                 </button>
-                <Button size="sm" variant="quiet" onClick={() => void open(f)}>
+                <Button
+                  size="sm"
+                  variant="quiet"
+                  onClick={() => void open(f)}
+                  icon={<IconOpen size={13} />}
+                >
                   Open
                 </Button>
                 <Button
@@ -195,8 +206,10 @@ export default function Documents() {
                   onClick={() => void remove(f)}
                   disabled={!isAdmin && !mine}
                   disabledReason="You can delete your own uploads; Abid can delete any"
+                  icon={<IconTrash size={13} />}
+                  aria-label={`Delete ${displayName(f.name)}`}
                 >
-                  Delete
+                  <span className="sr-only sm:not-sr-only">Delete</span>
                 </Button>
               </li>
             )

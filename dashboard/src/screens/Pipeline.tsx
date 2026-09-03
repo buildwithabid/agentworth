@@ -7,6 +7,7 @@ import { OPEN_STAGES, STAGES } from '../lib/types'
 import { firstName, shortDate, today, usd } from '../lib/format'
 import { earliestFreeWeek, weekLabel } from '../lib/capacity'
 import {
+  Alarm,
   Avatar,
   Button,
   Card,
@@ -20,6 +21,7 @@ import {
   Select,
   useToast,
 } from '../components/ui'
+import { IconPlus } from '../components/icons'
 
 type Draft = {
   id?: string
@@ -141,6 +143,7 @@ export default function Pipeline() {
                 next_action_date: '',
               })
             }
+            icon={<IconPlus size={15} />}
           >
             Add deal
           </Button>
@@ -148,11 +151,8 @@ export default function Pipeline() {
       />
 
       {contested.size > 0 && (
-        <div className="mb-4 rounded-xl border-2 border-alarm bg-alarm/10 p-4">
-          <p className="text-sm font-semibold text-alarm">
-            ⚠ The same company is being worked by both owners
-          </p>
-          <ul className="mt-2 space-y-1 text-sm">
+        <Alarm title="The same company is being worked by both owners">
+          <ul className="space-y-1 text-sm">
             {[...contested.values()].map((list) => (
               <li key={list[0].company_key}>
                 <span className="font-medium">{list[0].company}</span>
@@ -166,13 +166,13 @@ export default function Pipeline() {
             ))}
           </ul>
           <p className="mt-2 text-xs text-body">
-            Sort out who owns it before either of you calls again. Lists A and B exist so this
-            does not happen.
+            Sort out who owns it before either of you calls again. Lists A and B exist so this does
+            not happen.
           </p>
-        </div>
+        </Alarm>
       )}
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-2">
+      <div className="mb-4 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
         {totals.map((t) => (
           <Card key={t.person.id} className="flex items-center gap-3">
             <Avatar name={t.person.full_name} you={t.person.id === me?.id} />
@@ -187,7 +187,7 @@ export default function Pipeline() {
         ))}
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-rule bg-panel px-4 py-3 text-sm">
+      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-hair bg-panel px-4 py-3 text-sm">
         {cap <= 0 ? (
           <span className="text-body">No weekly hours cap set yet.</span>
         ) : free ? (
@@ -205,25 +205,25 @@ export default function Pipeline() {
         )}
         <button
           onClick={() => setMineOnly((v) => !v)}
-          className="ml-auto rounded-md border border-rule bg-white px-2.5 py-1 text-xs font-medium text-body transition hover:border-body/40 hover:text-ink"
+          className="ml-auto rounded-md border border-rule bg-card px-2.5 py-1 text-xs font-medium text-body transition hover:border-body/40 hover:text-ink"
         >
           {mineOnly ? 'Showing mine' : 'Showing everyone'}
         </button>
       </div>
 
-      <div className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-4">
+      <div className="no-scrollbar -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-4 xl:mx-0 xl:grid xl:grid-cols-6 xl:overflow-visible xl:px-0">
         {STAGES.map((stage) => {
           const inStage = visible.filter((d) => d.stage === stage)
           const value = inStage.reduce((s, d) => s + d.value_usd, 0)
           return (
-            <section key={stage} className="w-[268px] shrink-0 snap-start">
-              <div className="mb-2 flex items-baseline justify-between border-b border-rule pb-1.5">
-                <h2 className="text-sm font-semibold">{stage}</h2>
-                <span className="tnum text-xs text-muted">
+            <section key={stage} className="w-[264px] shrink-0 snap-start xl:w-auto">
+              <div className="mb-2.5 flex items-baseline justify-between border-b border-rule pb-2">
+                <h2 className="text-[13px] font-semibold tracking-[0.02em]">{stage}</h2>
+                <span className="tnum text-[11px] text-muted">
                   {inStage.length} · {usd(value)}
                 </span>
               </div>
-              <div className="space-y-2">
+              <div className="min-h-[88px] space-y-2">
                 {inStage.map((deal) => (
                   <DealCard
                     key={deal.id}
@@ -296,8 +296,8 @@ function DealCard({
   const overdue = deal.next_action_date != null && deal.next_action_date < today()
   return (
     <article
-      className={`rounded-xl border bg-white p-3 transition ${
-        contested ? 'border-alarm ring-1 ring-alarm' : 'border-rule hover:border-body/30'
+      className={`rounded-xl border bg-card p-3.5 shadow-card transition duration-150 hover:-translate-y-px hover:shadow-lift ${
+        contested ? 'border-alarm ring-1 ring-alarm/40' : 'border-rule'
       }`}
     >
       <button
@@ -313,7 +313,7 @@ function DealCard({
         </div>
         {contested && (
           <p className="mt-1 text-[11px] font-semibold text-alarm">
-            ⚠ also worked by the other owner
+            Also worked by the other owner
           </p>
         )}
         <p className="tnum mt-1.5 font-serif text-lg leading-none">{usd(deal.value_usd)}</p>
@@ -337,7 +337,7 @@ function DealCard({
           value={deal.stage}
           onChange={(e) => onMove(e.target.value as Stage)}
           aria-label={`Stage for ${deal.company}`}
-          className="mt-2.5 w-full rounded-md border border-rule bg-panel px-2 py-1 text-xs text-body transition hover:border-body/40"
+          className="mt-2.5 w-full rounded-md border border-hair bg-panel px-2 py-1 text-xs text-body transition hover:border-body/40"
         >
           {STAGES.map((s) => (
             <option key={s} value={s}>
@@ -447,7 +447,7 @@ function DealForm({
       }
     >
       {readOnly && (
-        <p className="mb-4 rounded-lg border border-rule bg-panel px-3.5 py-2.5 text-xs text-body">
+        <p className="mb-4 rounded-lg border border-hair bg-panel px-3.5 py-2.5 text-xs text-body">
           This is {ownerName}'s deal. You can see it — the duplicate check needs that — but only
           they or Abid can change it.
         </p>
@@ -466,7 +466,7 @@ function DealForm({
 
         {clash && (
           <div className="rounded-lg border-2 border-alarm bg-alarm/10 px-3.5 py-2.5 text-sm text-alarm">
-            ⚠ This company is already in the pipeline under another owner at{' '}
+            This company is already in the pipeline under another owner at{' '}
             <span className="font-semibold">{clash.stage}</span>. Talk to them before saving.
           </div>
         )}

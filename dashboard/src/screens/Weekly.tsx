@@ -22,6 +22,7 @@ import {
   PageHeader,
   Stat,
 } from '../components/ui'
+import { IconAlert, IconCheck } from '../components/icons'
 
 type Bundle = {
   deals: Deal[]
@@ -146,7 +147,7 @@ export default function Weekly() {
         subtitle={`Monday meeting, week of ${shortDate(thisWeek.start)}. Pipeline, capacity, cash, what slipped.`}
       />
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-4 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(210px,1fr))]">
         <Card>
           <Stat
             label="Open pipeline"
@@ -281,7 +282,9 @@ function AttentionRow({
 }) {
   return (
     <li className="flex items-start gap-2">
-      <span className={count === 0 ? 'text-accent' : 'text-alarm'}>{count === 0 ? '✓' : '⚠'}</span>
+      <span className={`mt-0.5 shrink-0 ${count === 0 ? 'text-good' : 'text-alarm'}`}>
+        {count === 0 ? <IconCheck size={15} /> : <IconAlert size={15} />}
+      </span>
       <span className={count === 0 ? 'text-body' : 'font-medium text-alarm'}>
         {count === 0 ? zero : some(count)}
       </span>

@@ -1,59 +1,164 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Agentworth internal — design tokens.
+
+   The palette is the marketing site's: paper, deep green, warm neutrals. The
+   neutrals carry a slight green bias so they read as chosen rather than
+   inherited grey. Dark mode is a considered second set, not an inversion —
+   the founders check this on phones in the evening.
+   --------------------------------------------------------------------------- */
+
 @theme {
-  --color-paper:  #faf8f4;
-  --color-panel:  #f2efe8;
-  --color-sunk:   #ece8df;
-  --color-ink:    #151714;
-  --color-body:   #5a5f57;
-  --color-muted:  #8a9086;
-  --color-rule:   #e0dbd0;
-  --color-accent: #1f4d3f;
-  --color-alarm:  #a8322a;
-  --color-warn:   #9c5716;
+  /* surfaces, back to front */
+  --color-paper:  #faf8f4;   /* page ground */
+  --color-card:   #ffffff;   /* raised surface */
+  --color-panel:  #f2efe8;   /* quiet fill */
+  --color-sunk:   #eae6dc;   /* tracks, wells */
+
+  /* text */
+  --color-ink:    #14170f;
+  --color-body:   #575c52;
+  --color-muted:  #8b9084;
+
+  --color-rule:   #e2ded2;
+  --color-hair:   #eeeae0;
+
+  /* accent and semantics */
+  --color-accent:      #1f4d3f;
+  --color-accent-ink:  #faf8f4;   /* text on accent */
+  --color-alarm:       #a8322a;
+  --color-warn:        #96570f;
+  --color-good:        #1f6b4f;
 
   --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
   --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
 
-  --animate-rise: rise .18s cubic-bezier(.2,.8,.3,1);
-  --animate-fade: fade .15s ease-out;
+  --shadow-card: 0 1px 2px rgb(20 23 15 / 0.04), 0 1px 1px rgb(20 23 15 / 0.03);
+  --shadow-lift: 0 4px 14px rgb(20 23 15 / 0.08), 0 1px 3px rgb(20 23 15 / 0.05);
+  --shadow-pop:  0 18px 48px rgb(20 23 15 / 0.20);
+
+  --animate-rise: rise .2s cubic-bezier(.2,.8,.3,1);
+  --animate-fade: fade .16s ease-out;
+  --animate-slide: slide .22s cubic-bezier(.2,.8,.3,1);
 }
 
-@keyframes rise {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: none; }
-}
-@keyframes fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+@keyframes rise  { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+@keyframes fade  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slide { from { opacity: 0; transform: translateY(12px) scale(.98) } to { opacity: 1; transform: none } }
+
+@layer base {
+  :root { color-scheme: light; }
+
+  /* System dark, unless an explicit light choice overrides it. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --color-paper: #101310;
+      --color-card:  #181c16;
+      --color-panel: #1e231c;
+      --color-sunk:  #262c23;
+
+      --color-ink:   #ebe9de;
+      --color-body:  #a6ab9d;
+      --color-muted: #7b8175;
+
+      --color-rule:  #2c3229;
+      --color-hair:  #232821;
+
+      --color-accent:     #7cb69b;
+      --color-accent-ink: #0d1410;
+      --color-alarm:      #e0857a;
+      --color-warn:       #d09a58;
+      --color-good:       #7cb69b;
+
+      --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+      --shadow-lift: 0 4px 14px rgb(0 0 0 / 0.45);
+      --shadow-pop:  0 18px 48px rgb(0 0 0 / 0.6);
+    }
+  }
+
+  /* Explicit dark choice wins in the other direction. */
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-paper: #101310;
+    --color-card:  #181c16;
+    --color-panel: #1e231c;
+    --color-sunk:  #262c23;
+
+    --color-ink:   #ebe9de;
+    --color-body:  #a6ab9d;
+    --color-muted: #7b8175;
+
+    --color-rule:  #2c3229;
+    --color-hair:  #232821;
+
+    --color-accent:     #7cb69b;
+    --color-accent-ink: #0d1410;
+    --color-alarm:      #e0857a;
+    --color-warn:       #d09a58;
+    --color-good:       #7cb69b;
+
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-lift: 0 4px 14px rgb(0 0 0 / 0.45);
+    --shadow-pop:  0 18px 48px rgb(0 0 0 / 0.6);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    background: var(--color-paper);
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv05", "ss01";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* One focus treatment everywhere. */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection { background: color-mix(in oklab, var(--color-accent) 22%, transparent); }
+
+  /* Scrollbars that don't shout. */
+  * { scrollbar-color: var(--color-rule) transparent; scrollbar-width: thin; }
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
-  background: var(--color-paper);
+@utility tnum { font-variant-numeric: tabular-nums; }
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 }
 
-body {
-  margin: 0;
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-feature-settings: "cv05", "ss01";
-  -webkit-font-smoothing: antialiased;
+/* Skip link — visible only when focused. */
+@utility skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: top .15s ease;
+  &:focus { top: 12px; }
 }
-
-/* one focus treatment everywhere */
-:where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-.tnum { font-variant-numeric: tabular-nums; }
-
-/* horizontal scrollers keep their edges quiet */
-.no-scrollbar { scrollbar-width: none; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }

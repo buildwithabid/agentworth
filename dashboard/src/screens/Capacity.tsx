@@ -28,6 +28,7 @@ import {
   Select,
   useToast,
 } from '../components/ui'
+import { IconPlus } from '../components/icons'
 
 type Draft = {
   id?: string
@@ -113,7 +114,9 @@ export default function Capacity() {
         subtitle="Abid's build capacity. Two people sell into this one number."
         actions={
           isAdmin ? (
-            <Button onClick={() => setEditing(blank())}>Add project</Button>
+            <Button onClick={() => setEditing(blank())} icon={<IconPlus size={15} />}>
+              Add project
+            </Button>
           ) : undefined
         }
       />
@@ -301,7 +304,7 @@ function ProjectRow({
       </span>
     </>
   )
-  const cls = 'flex w-full items-center gap-3 rounded-xl border border-rule bg-white p-3 text-left'
+  const cls = 'flex w-full items-center gap-3 rounded-xl border border-rule bg-card p-3 text-left'
   return clickable ? (
     <button onClick={onEdit} className={`${cls} transition hover:border-accent`}>
       {inner}

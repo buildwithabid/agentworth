@@ -1,18 +1,21 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { SessionProvider, useSession } from './lib/session'
 import Layout, { ROUTES } from './components/Layout'
 import type { Route } from './components/Layout'
 import SignIn from './components/SignIn'
 import Pending from './components/Pending'
+import ErrorBoundary from './components/ErrorBoundary'
 import { LoadingScreen, ToastProvider } from './components/ui'
-import Pipeline from './screens/Pipeline'
-import Capacity from './screens/Capacity'
-import Tasks from './screens/Tasks'
-import Ledger from './screens/Ledger'
-import Checklist from './screens/Checklist'
-import Documents from './screens/Documents'
-import Weekly from './screens/Weekly'
-import Team from './screens/Team'
+
+// Split per screen: the Monday meeting does not need the ledger's code to open.
+const Pipeline = lazy(() => import('./screens/Pipeline'))
+const Capacity = lazy(() => import('./screens/Capacity'))
+const Tasks = lazy(() => import('./screens/Tasks'))
+const Ledger = lazy(() => import('./screens/Ledger'))
+const Checklist = lazy(() => import('./screens/Checklist'))
+const Documents = lazy(() => import('./screens/Documents'))
+const Weekly = lazy(() => import('./screens/Weekly'))
+const Team = lazy(() => import('./screens/Team'))
 
 function currentRoute(): Route {
   const hash = window.location.hash.replace(/^#\/?/, '') as Route
@@ -45,14 +48,17 @@ function Shell() {
   const [route, setRoute] = useState<Route>(currentRoute)
 
   useEffect(() => {
-    const onHash = () => setRoute(currentRoute())
+    const onHash = () => {
+      setRoute(currentRoute())
+      window.scrollTo({ top: 0 })
+    }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
   if (!ready)
     return (
-      <div className="mx-auto max-w-6xl px-4 py-10">
+      <div className="mx-auto max-w-[1120px] px-4 py-10 sm:px-7">
         <LoadingScreen />
       </div>
     )
@@ -64,17 +70,21 @@ function Shell() {
 
   return (
     <Layout route={safe}>
-      <Screen route={safe} />
+      <Suspense fallback={<LoadingScreen />}>
+        <Screen route={safe} />
+      </Suspense>
     </Layout>
   )
 }
 
 export default function App() {
   return (
-    <ToastProvider>
-      <SessionProvider>
-        <Shell />
-      </SessionProvider>
-    </ToastProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <SessionProvider>
+          <Shell />
+        </SessionProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   )
 }

@@ -6,6 +6,7 @@ import type { Currency, LedgerEntry, Settings } from '../lib/types'
 import { CURRENCIES } from '../lib/types'
 import { daysBetween, money, shortDate, today } from '../lib/format'
 import {
+  Alarm,
   Badge,
   Button,
   Card,
@@ -21,6 +22,7 @@ import {
   Select,
   useToast,
 } from '../components/ui'
+import { IconPlus } from '../components/icons'
 
 type Draft = {
   id?: string
@@ -131,7 +133,9 @@ export default function Ledger() {
       <PageHeader
         title="Ledger"
         subtitle="Money still lands in Abid's personal account, so all three of you see every line of it."
-        actions={isAdmin ? <Button onClick={() => setEditing(blank())}>Add entry</Button> : undefined}
+        actions={isAdmin ? <Button onClick={() => setEditing(blank())} icon={<IconPlus size={15} />}>
+              Add entry
+            </Button> : undefined}
       />
 
       {!isAdmin && (
@@ -141,7 +145,7 @@ export default function Ledger() {
         </ReadOnlyNote>
       )}
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-2">
+      <div className="mb-4 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
         {CURRENCIES.map((c) => (
           <Card key={c}>
             <Label>{c} balance</Label>
@@ -160,13 +164,12 @@ export default function Ledger() {
       </div>
 
       {flagged.length > 0 && (
-        <div className="mb-4 rounded-xl border-2 border-alarm bg-alarm/10 p-4">
-          <p className="text-sm font-semibold text-alarm">
-            ⚠ {flagged.length} incoming{' '}
-            {flagged.length === 1 ? 'payment' : 'payments'} over {PRC_GRACE_DAYS} days old with no
-            PRC
-          </p>
-          <ul className="mt-2 space-y-1 text-sm">
+        <Alarm
+          title={`${flagged.length} incoming ${
+            flagged.length === 1 ? 'payment' : 'payments'
+          } over ${PRC_GRACE_DAYS} days old with no PRC`}
+        >
+          <ul className="space-y-1 text-sm">
             {flagged.map((e) => (
               <li key={e.id}>
                 <span className="font-medium">{money(e.amount, e.currency)}</span>
@@ -181,30 +184,33 @@ export default function Ledger() {
           <p className="mt-2 text-xs text-body">
             Every foreign receipt needs its PRC filed against it. Chase the bank.
           </p>
-        </div>
+        </Alarm>
       )}
 
       {awaiting.length > 0 && (
-        <div className="mb-4 rounded-xl border border-warn/50 bg-warn/10 p-4">
-          <p className="text-sm font-semibold text-warn">
-            {awaiting.length} {awaiting.length === 1 ? 'payment needs' : 'payments need'} a second
-            founder's approval
-          </p>
-          <p className="mt-1 text-xs text-body">
+        <Alarm
+          tone="warn"
+          title={`${awaiting.length} ${
+            awaiting.length === 1 ? 'payment needs' : 'payments need'
+          } a second founder's approval`}
+        >
+          <p className="text-xs text-body">
             Clause 6: spending above {money(settings.approval_threshold_pkr, 'PKR')} needs another
             founder to sign it off. Whoever recorded it cannot be the one who approves it.
           </p>
-        </div>
+        </Alarm>
       )}
 
       {rows.length === 0 ? (
         <Empty
           title="No entries yet"
           hint="Log every receipt and payout here — that is the sheet clause 6 asks for."
-          action={isAdmin ? <Button onClick={() => setEditing(blank())}>Add entry</Button> : undefined}
+          action={isAdmin ? <Button onClick={() => setEditing(blank())} icon={<IconPlus size={15} />}>
+              Add entry
+            </Button> : undefined}
         />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-rule bg-white">
+        <div className="overflow-x-auto rounded-xl border border-rule bg-card shadow-card">
           <table className="w-full min-w-[820px] text-sm">
             <thead className="border-b border-rule bg-panel text-left">
               <tr className="text-[11px] font-semibold tracking-wide text-muted uppercase">
@@ -444,7 +450,7 @@ function EntryForm({
               type="checkbox"
               checked={form.prc_received}
               onChange={(e) => setForm({ ...form, prc_received: e.target.checked })}
-              className="h-[18px] w-[18px] accent-[#1f4d3f]"
+              className="h-[18px] w-[18px] accent-[color:var(--color-accent)]"
             />
             PRC received from the bank
           </label>

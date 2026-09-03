@@ -20,6 +20,7 @@ import {
   Textarea,
   useToast,
 } from '../components/ui'
+import { IconPlus } from '../components/icons'
 
 type Draft = {
   id?: string
@@ -68,9 +69,15 @@ export default function Tasks() {
 
   const shown = useMemo(() => {
     const all = tasks ?? []
-    if (filter === 'mine') return all.filter((t) => t.assignee_id === me?.id && t.status !== 'done')
-    if (filter === 'open') return all.filter((t) => t.status !== 'done')
-    return all
+    const picked =
+      filter === 'mine'
+        ? all.filter((t) => t.assignee_id === me?.id)
+        : filter === 'open'
+          ? all.filter((t) => t.status !== 'done')
+          : all
+    // Completed work sinks to the bottom rather than disappearing the moment
+    // it is ticked — vanishing reads as "deleted", which is alarming.
+    return [...picked].sort((a, b) => Number(a.status === 'done') - Number(b.status === 'done'))
   }, [tasks, filter, me])
 
   const counts = useMemo(() => {
@@ -109,13 +116,15 @@ export default function Tasks() {
       <PageHeader
         title="Tasks"
         subtitle="Everything here has one named owner. That is the point — “we'll all watch it” is how things get missed."
-        actions={<Button onClick={() => setEditing(blank(me?.id ?? ''))}>Add task</Button>}
+        actions={<Button onClick={() => setEditing(blank(me?.id ?? ''))} icon={<IconPlus size={15} />}>
+              Add task
+            </Button>}
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {(
           [
-            ['mine', `Mine (${counts.mine})`],
+            ['mine', `Mine (${counts.mine} open)`],
             ['open', `Open (${counts.open})`],
             ['all', `All (${counts.all})`],
           ] as [Filter, string][]
@@ -125,8 +134,8 @@ export default function Tasks() {
             onClick={() => setFilter(key)}
             className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
               filter === key
-                ? 'bg-accent text-paper'
-                : 'border border-rule bg-white text-body hover:border-body/40 hover:text-ink'
+                ? 'bg-accent text-accent-ink'
+                : 'border border-rule bg-card text-body hover:border-body/40 hover:text-ink'
             }`}
           >
             {label}
@@ -148,7 +157,9 @@ export default function Tasks() {
               ? 'Anything with your name on it will show up here.'
               : 'Raise the things that keep slipping — filings, renewals, the follow-up nobody owns.'
           }
-          action={<Button onClick={() => setEditing(blank(me?.id ?? ''))}>Add task</Button>}
+          action={<Button onClick={() => setEditing(blank(me?.id ?? ''))} icon={<IconPlus size={15} />}>
+              Add task
+            </Button>}
         />
       ) : (
         <ul className="space-y-2">
@@ -158,8 +169,8 @@ export default function Tasks() {
             return (
               <li
                 key={t.id}
-                className={`flex items-start gap-3 rounded-xl border bg-white p-3.5 transition ${
-                  overdue ? 'border-alarm/50' : 'border-rule hover:border-body/30'
+                className={`flex items-start gap-3 rounded-xl border bg-card p-3.5 shadow-card transition duration-150 hover:-translate-y-px hover:shadow-lift ${
+                  overdue ? 'border-alarm/50' : 'border-rule'
                 }`}
               >
                 <input
@@ -169,7 +180,7 @@ export default function Tasks() {
                   onChange={(e) => void setStatus(t, e.target.checked ? 'done' : 'todo')}
                   aria-label={`Mark ${t.title} done`}
                   title={editable ? undefined : 'Only the assignee, the author or Abid can move this'}
-                  className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-[#1f4d3f] disabled:opacity-30"
+                  className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-[color:var(--color-accent)] disabled:opacity-30"
                 />
 
                 <button
@@ -215,7 +226,7 @@ export default function Tasks() {
                     value={t.status}
                     onChange={(e) => void setStatus(t, e.target.value as TaskStatus)}
                     aria-label={`Status of ${t.title}`}
-                    className="shrink-0 rounded-md border border-rule bg-panel px-2 py-1 text-xs text-body"
+                    className="shrink-0 rounded-md border border-hair bg-panel px-2 py-1 text-xs text-body"
                   >
                     {TASK_STATUSES.map((s) => (
                       <option key={s} value={s}>

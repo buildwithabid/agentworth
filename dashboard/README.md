@@ -90,6 +90,11 @@ the Team screen.
 **Removing someone:** set them back to `pending` on the Team screen. They are
 locked out immediately and nothing they entered is deleted.
 
+Do not delete the auth user instead. `deals.owner_id` is `on delete restrict`,
+so the delete fails while they still own any deal — deliberately, because
+clause 7 makes the leads the business's. Reassign the deals first if you really
+mean to remove the account.
+
 **The founding admin** is bootstrapped by email in `public.handle_new_user()`.
 If that address ever changes, edit the function.
 
@@ -135,6 +140,24 @@ Files are stored under `<uuid>/<original name>`, so two people uploading
 `scan.pdf` do not collide and the name you chose survives. Nothing is
 reachable by URL: opening a file mints a signed link that expires after two
 minutes.
+
+## Interface
+
+- **Dark mode** follows the system by default, with a toggle in the sidebar that
+  overrides it either way. The choice is remembered per browser and applied
+  before first paint, so a dark-mode user never sees a light flash.
+- **Layout** is a fixed sidebar on desktop and a scrolling tab strip on phones.
+  Both navs exist in the DOM; CSS hides one, so only one reaches assistive tech.
+- **Icons** are hand-authored inline SVG in `components/icons.tsx` — eight nav
+  marks and a dozen interface ones do not justify a dependency, and they inherit
+  `currentColor` so they follow the theme with no extra rules.
+- **Colour is token-only.** Every surface and text colour comes from a custom
+  property defined in `index.css`; nothing is hardcoded, which is what makes the
+  dark palette a single block rather than a sweep through the components.
+- **Screens are code-split.** Opening the Monday meeting does not download the
+  ledger's code. Initial JS is about 122 KB gzipped, each screen 2–4 KB on top.
+- **A render error shows a recovery screen**, not a blank page, and says plainly
+  that nothing entered was lost.
 
 ## Things worth knowing
 
