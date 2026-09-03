@@ -159,12 +159,25 @@ The Team screen gives the admin:
   action. Clause 7 makes leads the business's, so a departure hands them on
   rather than losing them.
 
-**Two things deliberately not in the browser:** setting someone's password and
-deleting an account outright. Both need the service-role key, which must never
-ship in a bundle. `supabase/functions/admin-users/` holds a deployable Edge
-Function that does them safely — it reads the caller's own JWT, checks their
-role in the database, and refuses anyone who is not an admin. It is **not
-deployed**; until it is, use Authentication → Users in the Supabase console.
+- **Add a founder** — invites the address and creates the account in one step,
+  with the password you choose. No confirmation email is involved, which matters
+  because the free tier rate-limits mail.
+- **Set password** — sets it outright, no reset email. Tell them what you set.
+- **Suspend / restore** — harder than `pending`: they cannot sign in at all.
+- **Remove** — deletes the account for good, refused while they still own deals.
+- **Last sign-in** per member, so a dormant account is visible.
+
+The last four need the service-role key, which must never ship in a browser
+bundle. They go to the `admin-users` Edge Function in
+`supabase/functions/admin-users/`, which reads the caller's own JWT, looks their
+role up in the database and refuses anyone who is not an admin — so the check
+does not depend on the client being honest. It also refuses to let you act on
+your own account, or to strand the business without an admin.
+
+Verified against the deployed function: a sales user is refused with 403, a
+sales user cannot create an admin, an anonymous caller is refused, and the
+create / set-password / suspend / restore / delete cycle works including the
+deal-handover guard.
 
 ## Interface
 

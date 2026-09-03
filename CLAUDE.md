@@ -65,6 +65,19 @@ a user in a test or a script, insert the invite row first or the insert fails.
 - `deals.owner_id` is `on delete restrict` on purpose (clause 7). Deleting a
   founder who owns deals fails by design; set the profile to `pending` instead.
 
+## The admin Edge Function
+
+`supabase/functions/admin-users/` holds the only code that touches the
+service-role key. It is deployed. Anything needing that key — creating an
+account, setting a password, banning, deleting — goes there, never into the
+browser bundle.
+
+Its contract: read the caller's JWT, look the role up in `profiles` with the
+service client, refuse anything that is not `admin`. **Never trust a role
+claim from the request body.** It also refuses to act on the caller's own
+account and to remove the last admin, and it hands a departing founder's deals
+on rather than deleting them with the account (clause 7).
+
 ## Conventions
 
 - Money: USD and PKR are **never summed**. There is no exchange rate anywhere.

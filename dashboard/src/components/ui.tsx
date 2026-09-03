@@ -1,13 +1,16 @@
 import {
+  cloneElement,
   createContext,
+  isValidElement,
   useCallback,
   useContext,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
 } from 'react'
-import type { ReactNode } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 import { initials } from '../lib/format'
 import { IconAlert, IconCheck, IconClose } from './icons'
 
@@ -124,6 +127,11 @@ export function Button({
 const field =
   'w-full rounded-lg border border-rule bg-card px-3 py-2 text-base text-ink transition placeholder:text-muted hover:border-body/40 focus:border-accent focus:outline-none disabled:bg-panel disabled:text-muted'
 
+/**
+ * The hint sits outside the <label> and is wired with aria-describedby. Inside
+ * it, the hint becomes part of the control's accessible name — a screen reader
+ * would announce the whole sentence as the field's name.
+ */
 export function Field({
   label,
   hint,
@@ -133,14 +141,35 @@ export function Field({
   hint?: string
   children: ReactNode
 }) {
+  const base = useId()
+  const controlId = `${base}-control`
+  const hintId = hint ? `${base}-hint` : undefined
+
+  const control = isValidElement(children)
+    ? cloneElement(children as ReactElement<Record<string, unknown>>, {
+        id: (children.props as { id?: string }).id ?? controlId,
+        'aria-describedby':
+          [hintId, (children.props as { 'aria-describedby'?: string })['aria-describedby']]
+            .filter(Boolean)
+            .join(' ') || undefined,
+      })
+    : children
+
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-[11px] font-semibold tracking-[0.08em] text-body uppercase">
+    <div className="block">
+      <label
+        htmlFor={controlId}
+        className="mb-1.5 block text-[11px] font-semibold tracking-[0.08em] text-body uppercase"
+      >
         {label}
-      </span>
-      {children}
-      {hint && <span className="mt-1 block text-xs text-muted">{hint}</span>}
-    </label>
+      </label>
+      {control}
+      {hint && (
+        <p id={hintId} className="mt-1 text-xs text-muted">
+          {hint}
+        </p>
+      )}
+    </div>
   )
 }
 
