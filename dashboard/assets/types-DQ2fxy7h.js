@@ -1,0 +1,1 @@
+var e=[`Lead`,`Contacted`,`Scoped`,`Proposal`,`Won`,`Lost`],t=[`Lead`,`Contacted`,`Scoped`,`Proposal`],n=[`todo`,`doing`,`done`],r={todo:`To do`,doing:`In progress`,done:`Done`},i=[`USD`,`PKR`];export{r as a,n as i,t as n,e as r,i as t};
