@@ -2,6 +2,9 @@
 
 Agentworth marketing site (agentworth.co, GitHub Pages from `main`) and the internal dashboard at `/dashboard/`.
 
+## 2026-09-07
+- Dashboard: a What's new screen (plain-language changes, newest first), fed by `dashboard/src/whats-new.ts`. Marketing page untouched.
+
 ## 2026-09-06
 - Dashboard: the onboarding checklist and the seeded to-do tasks were retired (archived in the database as `archive.checklist_steps_20260906` and `archive.tasks_20260906`); the pipeline is the only working surface.
 - Target lists A and B (393 verified UK accountancy firms with phone numbers and opening lines) delivered to the founders; not in the repo.
