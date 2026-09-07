@@ -16,6 +16,7 @@ export const ROUTES = [
   'documents',
   'weekly',
   'team',
+  'news',
 ] as const
 export type Route = (typeof ROUTES)[number]
 
@@ -28,6 +29,7 @@ const LABELS: Record<Route, string> = {
   documents: 'Documents',
   weekly: 'Weekly',
   team: 'Team',
+  news: "What's new",
 }
 
 /** The two screens that exist to hold the tension between selling and building. */

@@ -170,6 +170,13 @@ export const IconMenu = (p: Props) => (
   <Svg {...p}><path d="M4 7h16" /><path d="M4 12h16" /><path d="M4 17h16" /></Svg>
 )
 
+export const IconNews = (p: Props) => (
+  <Svg {...p}>
+    <path d="M12 3.5l1.8 4.2 4.5.4-3.4 3 1 4.4-3.9-2.3-3.9 2.3 1-4.4-3.4-3 4.5-.4z" />
+    <path d="M5 19.5h14" />
+  </Svg>
+)
+
 export const NAV_ICON = {
   pipeline: IconPipeline,
   capacity: IconCapacity,
@@ -179,4 +186,5 @@ export const NAV_ICON = {
   documents: IconDocuments,
   weekly: IconWeekly,
   team: IconTeam,
+  news: IconNews,
 } as const

@@ -16,6 +16,7 @@ const Checklist = lazy(() => import('./screens/Checklist'))
 const Documents = lazy(() => import('./screens/Documents'))
 const Weekly = lazy(() => import('./screens/Weekly'))
 const Team = lazy(() => import('./screens/Team'))
+const News = lazy(() => import('./screens/News'))
 
 function currentRoute(): Route {
   const hash = window.location.hash.replace(/^#\/?/, '') as Route
@@ -38,6 +39,8 @@ function Screen({ route }: { route: Route }) {
       return <Weekly />
     case 'team':
       return <Team />
+    case 'news':
+      return <News />
     default:
       return <Pipeline />
   }
