@@ -14,12 +14,18 @@ page at the root is untouched.
 **To redeploy after a change:**
 
 ```
-cd dashboard && npm run build
+cd dashboard && cp -n .env.example .env && npm run build
 git worktree add --detach /tmp/deploy origin/main
 cp -r dist/. /tmp/deploy/dashboard/
 cd /tmp/deploy && git add -A && git commit -m "Update dashboard build" && git push origin HEAD:main
 git worktree remove /tmp/deploy
 ```
+
+The `.env` step is not optional. It is gitignored, so a fresh clone has none,
+and Vite inlines these values at build time — a build without them produces a
+bundle that throws before React mounts and `/dashboard/` goes blank with a 200.
+The build now refuses to run rather than ship that, but copy the file anyway.
+The anon/publishable key is not a secret; it ships inside the bundle.
 
 ## Who can do what
 

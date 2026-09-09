@@ -6,6 +6,11 @@ export type Entry = { date: string; title: string; body: string }
 
 export const WHATS_NEW: Entry[] = [
   {
+    date: '2026-09-09',
+    title: 'Dashboard is back',
+    body: 'The dashboard had been showing a blank page since 7 September: the build that went live was missing its database settings, so the app stopped before it could draw anything. It is fixed, and a build made that way now fails instead of going out.',
+  },
+  {
     date: '2026-09-07',
     title: "What's new",
     body: 'This screen. Every change to the dashboard that affects how you use it is listed here, newest first.',
