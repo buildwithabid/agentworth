@@ -2,6 +2,10 @@
 
 Agentworth marketing site (agentworth.co, GitHub Pages from `main`) and the internal dashboard at `/dashboard/`.
 
+## 2026-09-09
+- Dashboard: fixed a blank page at `/dashboard/` that had been live since 2026-09-07. The published build was made without `dashboard/.env`, so Vite inlined `undefined` for the Supabase URL and key and the app threw before rendering; Pages still served a 200, so nothing reported it. Rebuilt with the values from `.env.example`, and `dashboard/vite.config.ts` now fails the build when either variable is missing so the same bundle cannot ship again.
+- Dashboard: removed 11 orphaned asset bundles left by earlier builds; `dashboard/assets/` now holds only the files the current build references.
+
 ## 2026-09-07
 - Dashboard: a What's new screen (plain-language changes, newest first), fed by `dashboard/src/whats-new.ts`. Marketing page untouched.
 
