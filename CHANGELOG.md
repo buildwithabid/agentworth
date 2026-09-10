@@ -2,6 +2,9 @@
 
 Agentworth marketing site (agentworth.co, GitHub Pages from `main`) and the internal dashboard at `/dashboard/`.
 
+## 2026-09-10
+- Privacy notice published at `/privacy.html`, linked from the footer. Required because outreach emails reach named individuals whose details came from Companies House and firms' own websites: UK GDPR Article 14 obliges us to say where we got them, on what basis, and how to be removed. States the legitimate-interests basis, the STOP keyword, retention, and the TPS/CTPS position on calls.
+
 ## 2026-09-09
 - Dashboard: fixed a blank page at `/dashboard/` that had been live since 2026-09-07. The published build was made without `dashboard/.env`, so Vite inlined `undefined` for the Supabase URL and key and the app threw before rendering; Pages still served a 200, so nothing reported it. Rebuilt with the values from `.env.example`, and `dashboard/vite.config.ts` now fails the build when either variable is missing so the same bundle cannot ship again.
 - Dashboard: removed 11 orphaned asset bundles left by earlier builds; `dashboard/assets/` now holds only the files the current build references.
